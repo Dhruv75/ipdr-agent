@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      # Core deps only - CI runs fully offline (no OpenAI/Qdrant), exercising
+      # the deterministic local path and guardrails.
+      - name: Install core dependencies
+        run: |
+          pip install pandas numpy openpyxl duckdb sqlglot plotly python-dotenv PyYAML pytest ruff
+
+      - name: Lint
+        run: ruff check src tests eval scripts || true
+
+      - name: Generate dataset
+        run: python scripts/generate_data.py --rows 2000 --out data/rag_formatted_data.xlsx
+
+      - name: Unit tests
+        run: PYTHONPATH=src pytest -q
+
+      - name: Evaluation gate
+        run: PYTHONPATH=src python eval/run_eval.py

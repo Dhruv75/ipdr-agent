@@ -1,0 +1,13 @@
+# Full-capability / cloud path. Installs the light core plus the optional
+# providers that the package imports lazily at runtime:
+#   - openai               : LLM NL-to-SQL, LLM routing tie-breaker, narration
+#   - qdrant-client        : managed vector store with server-side filtering
+#   - sentence-transformers: real 384-d embeddings (pulls torch; large)
+#
+# Use this for Docker or whenever you have API keys. If any of these are absent
+# the app degrades gracefully to the deterministic local path, so this file is
+# never required just to run the demo.
+-r requirements.txt
+openai>=1.30
+qdrant-client>=1.9
+sentence-transformers>=2.7

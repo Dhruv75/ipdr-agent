@@ -1,0 +1,81 @@
+# Golden evaluation set for the IPDR Forensic Agent.
+#
+# Two engines are measured with different metrics:
+#   * SQL queries  -> execution success + expectation checks (deterministic).
+#   * RAG queries  -> retrieval relevance (does the top-k contain the target
+#                     threat category?).
+#
+# Each item:
+#   id            unique name
+#   query         natural-language question
+#   engine        sql | rag
+#   expect_route  expected router strategy (sanity check on routing)
+#   min_rows      minimum rows the result must contain (sql)
+#   expect_cols   columns that must be present (sql, optional)
+#   expect_value  {column: value} the top row should contain (sql, optional)
+#   relevant_type data_type that should appear in top-k hits (rag)
+
+sql_cases:
+  - id: topn_domains_for_ip
+    query: "Top 10 domains accessed by IP 10.22.45.61"
+    engine: sql
+    expect_route: sql
+    min_rows: 1
+    expect_cols: [destination_domain]
+
+  - id: threat_distribution
+    query: "Distribution of threat categories"
+    engine: sql
+    expect_route: sql
+    min_rows: 5
+    expect_cols: [data_type]
+
+  - id: hourly_trend
+    query: "Show the hourly activity trend on 2025-09-17"
+    engine: sql
+    expect_route: sql
+    min_rows: 1
+
+  - id: fraud_filter
+    query: "List all Fraud_Ecommerce events"
+    engine: sql
+    expect_route: sql
+    min_rows: 1
+    expect_value:
+      data_type: Fraud_Ecommerce
+    expect_value_col: data_type
+
+  - id: protocol_compare
+    query: "Compare TCP vs UDP traffic"
+    engine: sql
+    expect_route: sql
+    min_rows: 1
+
+  - id: most_active_ips
+    query: "Which source IPs generated the most events?"
+    engine: sql
+    expect_route: sql
+    min_rows: 1
+    expect_cols: [source_ip]
+
+  - id: first_activity
+    query: "First activity of IP 10.22.45.77"
+    engine: sql
+    expect_route: sql
+    min_rows: 1
+
+rag_cases:
+  - id: beaconing_behaviour
+    query: "Find hosts showing regular beaconing check-in behaviour"
+    engine: rag
+    relevant_type: C2_Beaconing
+
+  - id: data_exfil
+    query: "Large sustained file uploads that look like data exfiltration"
+    engine: rag
+    relevant_type: Data_Exfiltration
+
+  - id: fraud_pattern
+    query: "Suspicious fake shopping deal after a banking login"
+    engine: rag
+    relevant_type: Fraud_Ecommerce

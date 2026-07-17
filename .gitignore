@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# Secrets & config
+.env
+.streamlit/secrets.toml
+*.key
+
+# Data artifacts (regenerate with scripts/generate_data.py)
+data/*.xlsx
+data/*.csv
+!data/.gitkeep
+
+# Tooling
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
