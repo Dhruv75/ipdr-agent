@@ -20,7 +20,7 @@ jobs:
       # the deterministic local path and guardrails.
       - name: Install core dependencies
         run: |
-          pip install pandas numpy openpyxl duckdb sqlglot plotly python-dotenv PyYAML pytest ruff
+          pip install -r requirements-dev.txt
 
       - name: Lint
         run: ruff check src tests eval scripts || true

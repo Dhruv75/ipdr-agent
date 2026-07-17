@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import pandas as pd
+from pandas.api import types as pdt
 
 TABLE_NAME = "ipdr_logs"
 
@@ -63,6 +64,8 @@ _PANDAS_TO_SQL = {
     "int64": "INTEGER",
     "float64": "DOUBLE",
     "object": "VARCHAR",
+    "string": "VARCHAR",
+    "str": "VARCHAR",
     "bool": "BOOLEAN",
 }
 
@@ -85,10 +88,15 @@ def build_catalog(df: pd.DataFrame, max_enum_cardinality: int = 40) -> SchemaCat
     for col in df.columns:
         if col == "rag_text":
             continue
-        if df[col].dtype == object:
-            nunique = df[col].nunique(dropna=True)
+        series = df[col]
+        # Enumerate string-like columns whether pandas represents them as the
+        # legacy "object" dtype or the newer "string"/"str" dtype (pandas 3.x
+        # default). Using dtype == object alone silently drops them under new
+        # pandas and empties the value catalog.
+        if pdt.is_object_dtype(series) or pdt.is_string_dtype(series):
+            nunique = series.nunique(dropna=True)
             if 0 < nunique <= max_enum_cardinality:
-                distinct_values[col] = sorted(map(str, df[col].dropna().unique()))
+                distinct_values[col] = sorted(map(str, series.dropna().unique()))
 
     return SchemaCatalog(
         columns=columns,
